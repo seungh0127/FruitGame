@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>과일 게임</title>
+  <style>
+    /* ── CSS Variables (Orange default) ─────────────── */
+    :root {
+      --fruit-soft:      #FFD98A;
+      --fruit-main:      #FF9F1C;
+      --fruit-dark:      #D07000;
+      --fruit-sel-soft:  #CBF3F0;
+      --fruit-sel-main:  #2EC4B6;
+      --fruit-sel-dark:  #1aaba2;
+      --fruit-leaf:      #5fc048;
+      --fruit-stem:      #48782a;
+      --fruit-num:       #ffffff;
+
+      --theme-main:      #FF9F1C;
+      --theme-bg:        #FFF4E3;
+      --theme-card:      #ffffff;
+      --theme-score:     #FF9F1C;
+      --theme-bar1:      #2EC4B6;
+      --theme-bar2:      #7AE8E1;
+      --theme-bar-lo1:   #FF6B00;
+      --theme-bar-lo2:   #FF9F1C;
+      --theme-btn-p:     #FF9F1C;
+      --theme-btn-s:     #CBF3F0;
+      --theme-btn-s-txt: #1aada0;
+      --theme-sel-bdr:   #2EC4B6;
+      --theme-sel-bg:    rgba(46,196,182,0.09);
+      --theme-icon:      #888888;
+    }
+
+    /* ── Reset ──────────────────────────────────────── */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--theme-bg);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 12px 28px;
+      overflow-x: hidden;
+      transition: background 0.3s;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+      margin-bottom: 12px;
+    }
+
+    .hdr-left {
+      flex: 1;
+      min-width: 0;
+      background: var(--theme-card);
+      border-radius: 18px;
+      padding: 14px 20px 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+      transition: background 0.3s;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .score-label { font-size: 13px; color: #bbb; font-weight: 500; }
+    .score-val   { font-size: 20px; font-weight: 700; color: #222; transition: color 0.2s; }
+    .score-val.flash { color: var(--theme-score) !important; }
+
+    .timer-track {
+      height: 7px;
+      background: #ebebeb;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .timer-fill {
+      height: 100%;
+      border-radius: 99px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--theme-bar1), var(--theme-bar2));
+      transition: background 0.5s;
+    }
+
+    /* ── Icon Buttons ────────────────────────────────── */
+    .hdr-right {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      width: 50px;
+      flex: 1;
+      min-height: 44px;
+      border: none;
+      border-radius: 14px;
+      background: var(--theme-card);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      color: var(--theme-icon);
+      transition: background 0.15s, color 0.15s, transform 0.1s;
+    }
+
+    .icon-btn:hover  { background: var(--theme-main); color: #fff; }
+    .icon-btn:active { transform: scale(0.94); opacity: 0.85; }
+
+    .icon-btn svg { display: block; }
+
+    /* ── Board ───────────────────────────────────────── */
+    .game-area { width: 100%; max-width: 860px; }
+
+    #board-wrapper {
+      position: relative;
+      background: var(--theme-card);
+      border-radius: 20px;
+      padding: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      transition: background 0.3s;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(17, 1fr);
+      gap: clamp(2px, 0.45vw, 5px);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    @media (max-width: 600px) {
+      #game-board { grid-template-columns: repeat(10, 1fr); }
+    }
+
+    /* ── Fruit cell ──────────────────────────────────── */
+    .cell {
+      aspect-ratio: 1;
+      position: relative;
+      container-type: inline-size;
+    }
+
+    .fruit {
+      position: absolute;
+      inset: 5%;
+      border-radius: 50%;
+      overflow: visible;
+      background: radial-gradient(circle at 38% 32%, var(--fruit-soft), var(--fruit-main) 55%, var(--fruit-dark) 90%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+      transition: background 0.25s, border-radius 0.25s;
+    }
+
+    .fruit.selected {
+      background: radial-gradient(circle at 38% 32%, var(--fruit-sel-soft), var(--fruit-sel-main) 55%, var(--fruit-sel-dark) 90%);
+    }
+
+    /* Stem */
+    .fruit-stem {
+      position: absolute;
+      top: -10%;
+      left: calc(50% - 3%);
+      width: 6%;
+      height: 14%;
+      background: var(--fruit-stem);
+      border-radius: 3px 3px 1px 1px;
+      pointer-events: none;
+      transition: background 0.25s;
+    }
+
+    /* Leaf */
+    .fruit-leaf {
+      position: absolute;
+      top: -10%;
+      right: 12%;
+      width: 32%;
+      height: 26%;
+      background: var(--fruit-leaf);
+      border-radius: 80% 0 80% 0;
+      transform: rotate(25deg);
+      pointer-events: none;
+      transition: background 0.25s;
+    }
+
+    /* Peach crease */
+    .fruit-crease {
+      position: absolute;
+      width: 2px;
+      height: 50%;
+      top: 25%;
+      left: calc(50% - 1px);
+      border-radius: 1px;
+      background: transparent;
+      pointer-events: none;
+      display: none;
+    }
+
+    body.theme-peach .fruit-crease {
+      display: block;
+      background: linear-gradient(to bottom, transparent, rgba(190,70,90,0.22) 20%, rgba(190,70,90,0.22) 80%, transparent);
+    }
+
+    /* Grape tendril (replaces leaf shape) */
+    body.theme-grape .fruit-leaf {
+      border-radius: 50% 0 50% 50%;
+      width: 24%;
+      height: 22%;
+      top: -7%;
+      right: 16%;
+      transform: rotate(10deg);
+    }
+
+    /* Apple – slightly wider leaf */
+    body.theme-apple .fruit-leaf {
+      width: 36%;
+      height: 28%;
+      top: -11%;
+    }
+
+    /* Mango – longer leaf */
+    body.theme-mango .fruit-leaf {
+      width: 30%;
+      height: 32%;
+      top: -14%;
+      border-radius: 70% 10% 70% 10%;
+    }
+
+    /* ── Per-theme fruit shapes ───────────────────────── */
+
+    /* Apple: slight notch shadow at top center */
+    body.theme-apple .fruit::after {
+      content: '';
+      position: absolute;
+      top: 1%;
+      left: calc(50% - 10%);
+      width: 20%;
+      height: 15%;
+      background: rgba(0,0,0,0.11);
+      border-radius: 0 0 60% 60%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Mango: slightly asymmetric oval */
+    body.theme-mango .fruit {
+      border-radius: 46% 54% 56% 44% / 56% 46% 54% 44%;
+      inset: 4% 6% 6% 4%;
+    }
+
+    /* Grape: cluster — three highlight circles suggest individual grapes */
+    body.theme-grape .fruit:not(.selected) {
+      background:
+        radial-gradient(circle 30% at 26% 26%, rgba(255,255,255,0.32) 0%, transparent 100%),
+        radial-gradient(circle 24% at 70% 22%, rgba(255,255,255,0.26) 0%, transparent 100%),
+        radial-gradient(circle 22% at 50% 64%, rgba(255,255,255,0.20) 0%, transparent 100%),
+        radial-gradient(circle at 38% 32%, var(--fruit-soft), var(--fruit-main) 55%, var(--fruit-dark) 90%);
+    }
+
+    /* Peach: softer elliptical gradient + crease is already in .fruit-crease */
+    body.theme-peach .fruit:not(.selected) {
+      background: radial-gradient(ellipse at 50% 42%, var(--fruit-soft) 0%, var(--fruit-main) 58%, var(--fruit-dark) 100%);
+    }
+
+    /* ── Mango: white card, dark header text, white num on fruit ── */
+    body.theme-mango .hdr-left    { background: #ffffff; }
+    body.theme-mango .score-label { color: #bbb; }
+    body.theme-mango .score-val   { color: #222; }
+    body.theme-mango .timer-track { background: #ebebeb; }
+
+    .num {
+      color: var(--fruit-num);
+      font-weight: 700;
+      font-size: 37cqi;
+      line-height: 1;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.22);
+      position: relative;
+      z-index: 1;
+      transition: color 0.25s;
+    }
+
+    .cell.gone .fruit { visibility: hidden; pointer-events: none; }
+
+    @keyframes pop {
+      0%   { transform: scale(1);   opacity: 1; }
+      35%  { transform: scale(1.2); opacity: 0.85; }
+      100% { transform: scale(0);   opacity: 0; }
+    }
+    .fruit.popping { animation: pop 0.26s ease-out forwards; }
+
+    /* ── Selection rect ──────────────────────────────── */
+    #sel-rect {
+      position: absolute;
+      display: none;
+      border: 2px solid var(--theme-sel-bdr);
+      background: var(--theme-sel-bg);
+      border-radius: 6px;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    /* ── Theme Overlay / Modal ───────────────────────── */
+    .dim {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 60;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.22s ease;
+    }
+
+    .dim.show { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 24px;
+      padding: 28px 24px 24px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.13);
+      width: min(420px, 92vw);
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    .theme-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 12px 6px 10px;
+      border: 2px solid #eee;
+      border-radius: 14px;
+      background: #f9f9f9;
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s, opacity 0.18s;
+    }
+
+    .theme-btn:hover:not(:disabled) {
+      border-color: var(--tb-color, #ccc);
+      background: #fff;
+    }
+
+    .theme-btn.active-theme {
+      border-color: var(--tb-color, #ccc);
+      background: #fff;
+      opacity: 0.48;
+      cursor: default;
+    }
+
+    .theme-btn:disabled { cursor: not-allowed; }
+
+    .theme-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+
+    .theme-btn-name { font-size: 11px; color: #666; font-weight: 500; }
+
+    /* ── End Overlay ─────────────────────────────────── */
+    #end-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.95);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    #end-overlay.show { display: flex; animation: fadeIn 0.38s ease; }
+
+    @keyframes fadeIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
+
+    .end-icon  { font-size: clamp(40px, 10vw, 60px); margin-bottom: 8px; }
+    .end-lbl   { font-size: 14px; color: #ccc; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+    .end-pts   { font-size: clamp(68px, 18vw, 108px); font-weight: 800; color: var(--theme-score); line-height: 1; transition: color 0.3s; }
+    .end-unit  { font-size: 18px; color: #ccc; }
+
+    .end-btns { display: flex; gap: 12px; margin-top: 28px; }
+
+    .btn {
+      padding: 14px 36px;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: transform 0.1s, opacity 0.1s;
+    }
+    .btn:active { opacity: 0.82; transform: scale(0.96); }
+    .btn-p { background: var(--theme-btn-p); color: #fff; transition: background 0.3s; }
+    .btn-s { background: var(--theme-btn-s); color: var(--theme-btn-s-txt); transition: background 0.3s, color 0.3s; }
+
+    /* ── Start Screen ────────────────────────────────── */
+    #start-overlay {
+      display: flex;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.97);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .start-icon  { font-size: 60px; margin-bottom: 6px; }
+    .start-title { font-size: clamp(24px, 6vw, 38px); font-weight: 800; color: #222; }
+    .start-sub   { font-size: 14px; color: #bbb; margin-bottom: 18px; }
+
+    .rules {
+      background: #f5f6f8;
+      border-radius: 16px;
+      padding: 14px 22px;
+      max-width: 300px;
+      width: 88%;
+      margin-bottom: 22px;
+    }
+
+    .rule {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.5;
+      margin-bottom: 9px;
+    }
+    .rule:last-child { margin-bottom: 0; }
+
+    .rule-dot {
+      width: 7px; height: 7px;
+      background: var(--theme-main);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+      transition: background 0.3s;
+    }
+
+    .btn-start {
+      background: var(--theme-btn-p);
+      color: #fff;
+      font-size: 16px;
+      padding: 15px 52px;
+      border-radius: 16px;
+      font-weight: 700;
+      transition: background 0.3s;
+    }
+  </style>
+</head>
+<body class="theme-orange">
+
+<!-- ── Header ─────────────────────────────────────────── -->
+<div class="header">
+  <div class="hdr-left">
+    <div class="score-row">
+      <span class="score-label">나의 점수</span>
+      <span class="score-val" id="score-el">0점</span>
+    </div>
+    <div class="timer-track">
+      <div class="timer-fill" id="timer-fill"></div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <button class="icon-btn" id="btn-theme" title="테마 변경">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="13.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/>
+        <circle cx="17.5" cy="10.5" r="1.2" fill="currentColor" stroke="none"/>
+        <circle cx="8.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/>
+        <circle cx="6.5" cy="12.5" r="1.2" fill="currentColor" stroke="none"/>
+        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13A1.64 1.64 0 0 1 14.42 16h2c3.05 0 5.56-2.5 5.56-5.56C21.97 6.01 17.46 2 12 2z"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="btn-restart" title="다시하기">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+        <path d="M21 3v5h-5"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ── Board ──────────────────────────────────────────── -->
+<div class="game-area">
+  <div id="board-wrapper">
+    <div id="game-board"></div>
+    <div id="sel-rect"></div>
+  </div>
+</div>
+
+<!-- ── Theme Modal ────────────────────────────────────── -->
+<div class="dim" id="theme-dim">
+  <div class="modal" id="theme-modal">
+    <div class="modal-title">테마 선택</div>
+    <div class="theme-grid" id="theme-grid"></div>
+  </div>
+</div>
+
+<!-- ── End Overlay ────────────────────────────────────── -->
+<div id="end-overlay">
+  <div class="end-icon" id="end-icon">🍊</div>
+  <div class="end-lbl">게임 종료</div>
+  <div class="end-pts" id="final-pts">0</div>
+  <div class="end-unit">점</div>
+  <div class="end-btns">
+    <button class="btn btn-p" id="btn-restart-end">다시하기</button>
+    <button class="btn btn-s" id="btn-share">공유하기</button>
+  </div>
+</div>
+
+<!-- ── Start Screen ───────────────────────────────────── -->
+<div id="start-overlay">
+  <div class="start-icon">🍊</div>
+  <div class="start-title">과일 게임</div>
+  <div class="start-sub">합이 10이 되도록 드래그해서 선택하세요</div>
+  <div class="rules">
+    <div class="rule"><div class="rule-dot"></div><span>드래그로 직사각형 영역을 선택하세요</span></div>
+    <div class="rule"><div class="rule-dot"></div><span>선택된 숫자 합이 <strong>정확히 10</strong>이면 과일이 제거됩니다</span></div>
+    <div class="rule"><div class="rule-dot"></div><span>제거된 과일 수만큼 점수를 획득합니다</span></div>
+    <div class="rule"><div class="rule-dot"></div><span>제한 시간은 <strong>90초</strong>입니다</span></div>
+  </div>
+  <button class="btn btn-start" id="btn-start">게임 시작</button>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Theme definitions ────────────────────────────── */
+  const THEMES = {
+    orange: {
+      name: '오렌지', emoji: '🍊',
+      dot: 'linear-gradient(135deg, #FFD98A, #FF9F1C)',
+      color: '#FF9F1C',
+      vars: {
+        '--fruit-soft':     '#FFD98A',
+        '--fruit-main':     '#FF9F1C',
+        '--fruit-dark':     '#D07000',
+        '--fruit-sel-soft': '#CBF3F0',
+        '--fruit-sel-main': '#2EC4B6',
+        '--fruit-sel-dark': '#1aaba2',
+        '--fruit-leaf':     '#5fc048',
+        '--fruit-stem':     '#48782a',
+        '--fruit-num':      '#ffffff',
+        '--theme-main':     '#FF9F1C',
+        '--theme-bg':       '#FFF4E3',
+        '--theme-card':     '#ffffff',
+        '--theme-score':    '#FF9F1C',
+        '--theme-bar1':     '#2EC4B6',
+        '--theme-bar2':     '#7AE8E1',
+        '--theme-bar-lo1':  '#FF6B00',
+        '--theme-bar-lo2':  '#FF9F1C',
+        '--theme-btn-p':    '#FF9F1C',
+        '--theme-btn-s':    '#CBF3F0',
+        '--theme-btn-s-txt':'#1aada0',
+        '--theme-sel-bdr':  '#2EC4B6',
+        '--theme-sel-bg':   'rgba(46,196,182,0.09)',
+        '--theme-icon':     '#aaaaaa',
+      }
+    },
+    apple: {
+      name: '사과', emoji: '🍎',
+      dot: 'linear-gradient(135deg, #F9A8A0, #E65A54)',
+      color: '#E65A54',
+      vars: {
+        '--fruit-soft':     '#F9A8A0',
+        '--fruit-main':     '#E65A54',
+        '--fruit-dark':     '#A82020',
+        '--fruit-sel-soft': '#DCEFC8',
+        '--fruit-sel-main': '#89BC5C',
+        '--fruit-sel-dark': '#5A8A28',
+        '--fruit-leaf':     '#89BC5C',
+        '--fruit-stem':     '#5d4037',
+        '--fruit-num':      '#ffffff',
+        '--theme-main':     '#E65A54',
+        '--theme-bg':       '#fef5f5',
+        '--theme-card':     '#ffffff',
+        '--theme-score':    '#E65A54',
+        '--theme-bar1':     '#89BC5C',
+        '--theme-bar2':     '#B8DCA0',
+        '--theme-bar-lo1':  '#E65A54',
+        '--theme-bar-lo2':  '#ef7070',
+        '--theme-btn-p':    '#E65A54',
+        '--theme-btn-s':    '#DCEFC8',
+        '--theme-btn-s-txt':'#5A8A28',
+        '--theme-sel-bdr':  '#89BC5C',
+        '--theme-sel-bg':   'rgba(137,188,92,0.10)',
+        '--theme-icon':     '#aaaaaa',
+      }
+    },
+    mango: {
+      name: '망고', emoji: '🥭',
+      dot: 'linear-gradient(135deg, #FBDFA2, #F3B23E)',
+      color: '#F3B23E',
+      vars: {
+        '--fruit-soft':     '#FBDFA2',
+        '--fruit-main':     '#F3B23E',
+        '--fruit-dark':     '#C07800',
+        '--fruit-sel-soft': '#D4DAFD',
+        '--fruit-sel-main': '#7990F7',
+        '--fruit-sel-dark': '#4A60D0',
+        '--fruit-leaf':     '#2d6a4f',
+        '--fruit-stem':     '#40531b',
+        '--fruit-num':      '#ffffff',
+        '--theme-main':     '#F3B23E',
+        '--theme-bg':       '#fffbef',
+        '--theme-card':     '#ffffff',
+        '--theme-score':    '#C07800',
+        '--theme-bar1':     '#7990F7',
+        '--theme-bar2':     '#AFBDFF',
+        '--theme-bar-lo1':  '#F3B23E',
+        '--theme-bar-lo2':  '#FBD070',
+        '--theme-btn-p':    '#F3B23E',
+        '--theme-btn-s':    '#D4DAFD',
+        '--theme-btn-s-txt':'#4A60D0',
+        '--theme-sel-bdr':  '#7990F7',
+        '--theme-sel-bg':   'rgba(121,144,247,0.10)',
+        '--theme-icon':     '#aaaaaa',
+      }
+    },
+    grape: {
+      name: '포도', emoji: '🍇',
+      dot: 'linear-gradient(135deg, #C890D8, #8B1FA8)',
+      color: '#8B1FA8',
+      vars: {
+        '--fruit-soft':     '#C890D8',
+        '--fruit-main':     '#8B1FA8',
+        '--fruit-dark':     '#5A0D7A',
+        '--fruit-sel-soft': '#dcf5a0',
+        '--fruit-sel-main': '#8bbe30',
+        '--fruit-sel-dark': '#5a8a10',
+        '--fruit-leaf':     '#7cb518',
+        '--fruit-stem':     '#4a3800',
+        '--fruit-num':      '#ffffff',
+        '--theme-main':     '#8B1FA8',
+        '--theme-bg':       '#f8f0fc',
+        '--theme-card':     '#ffffff',
+        '--theme-score':    '#8B1FA8',
+        '--theme-bar1':     '#8bc34a',
+        '--theme-bar2':     '#c5e1a5',
+        '--theme-bar-lo1':  '#8B1FA8',
+        '--theme-bar-lo2':  '#B060C8',
+        '--theme-btn-p':    '#8B1FA8',
+        '--theme-btn-s':    '#dcf5a0',
+        '--theme-btn-s-txt':'#5a8a10',
+        '--theme-sel-bdr':  '#8bbe30',
+        '--theme-sel-bg':   'rgba(139,190,48,0.09)',
+        '--theme-icon':     '#aaaaaa',
+      }
+    },
+    peach: {
+      name: '복숭아', emoji: '🍑',
+      dot: 'linear-gradient(135deg, #ffd6e0, #FF8FAB)',
+      color: '#FF8FAB',
+      vars: {
+        '--fruit-soft':     '#ffd6e0',
+        '--fruit-main':     '#FF8FAB',
+        '--fruit-dark':     '#c85070',
+        '--fruit-sel-soft': '#bbd8fc',
+        '--fruit-sel-main': '#4895ef',
+        '--fruit-sel-dark': '#1a60c0',
+        '--fruit-leaf':     '#57cc99',
+        '--fruit-stem':     '#48782a',
+        '--fruit-num':      '#ffffff',
+        '--theme-main':     '#FF8FAB',
+        '--theme-bg':       '#fff5f7',
+        '--theme-card':     '#ffffff',
+        '--theme-score':    '#d05070',
+        '--theme-bar1':     '#4895ef',
+        '--theme-bar2':     '#7ab8f5',
+        '--theme-bar-lo1':  '#FF8FAB',
+        '--theme-bar-lo2':  '#ffb8cc',
+        '--theme-btn-p':    '#FF8FAB',
+        '--theme-btn-s':    '#bbd8fc',
+        '--theme-btn-s-txt':'#1a60c0',
+        '--theme-sel-bdr':  '#4895ef',
+        '--theme-sel-bg':   'rgba(72,149,239,0.09)',
+        '--theme-icon':     '#aaaaaa',
+      }
+    }
+  };
+
+  const THEME_ORDER = ['orange','apple','mango','grape','peach'];
+
+  /* ── State ────────────────────────────────────────── */
+  const state = {
+    cells: [],
+    score: 0,
+    rafId: null,
+    t0: 0,
+    pausedAt: null,
+    ended: false,
+    currentTheme: 'orange',
+    drag: { on: false, x0: 0, y0: 0, x1: 0, y1: 0 },
+  };
+
+  /* ── Element refs ─────────────────────────────────── */
+  const $ = id => document.getElementById(id);
+  const boardEl    = $('game-board');
+  const wrapEl     = $('board-wrapper');
+  const selEl      = $('sel-rect');
+  const scoreEl    = $('score-el');
+  const timerEl    = $('timer-fill');
+  const endOverlay = $('end-overlay');
+  const startEl    = $('start-overlay');
+  const finalEl    = $('final-pts');
+  const endIcon    = $('end-icon');
+  const themeDim   = $('theme-dim');
+
+  /* ── Responsive grid ──────────────────────────────── */
+  function isMobile() { return window.innerWidth <= 600; }
+  function getCols()  { return isMobile() ? 10 : 17; }
+  function getRows()  { return isMobile() ? 17 : 10; }
+  const TOTAL = 170;
+
+  /* ── Init ─────────────────────────────────────────── */
+  function init() {
+    cancelAnimationFrame(state.rafId);
+    Object.assign(state, {
+      score: 0,
+      ended: false,
+      cells: [],
+      pausedAt: null,
+      drag: { on: false, x0: 0, y0: 0, x1: 0, y1: 0 },
+    });
+
+    endOverlay.classList.remove('show');
+    scoreEl.textContent = '0점';
+    timerEl.style.width = '100%';
+
+    for (let i = 0; i < TOTAL; i++) {
+      state.cells.push({ value: Math.ceil(Math.random() * 9), removed: false, el: null });
+    }
+
+    buildBoard();
+    state.t0 = performance.now();
+    loop();
+  }
+
+  /* ── Board ────────────────────────────────────────── */
+  function buildBoard() {
+    boardEl.innerHTML = '';
+    state.cells.forEach(c => {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+
+      const fruit = document.createElement('div');
+      fruit.className = 'fruit';
+
+      const stem   = document.createElement('div');
+      stem.className = 'fruit-stem';
+
+      const leaf   = document.createElement('div');
+      leaf.className = 'fruit-leaf';
+
+      const crease = document.createElement('div');
+      crease.className = 'fruit-crease';
+
+      const num    = document.createElement('span');
+      num.className = 'num';
+      num.textContent = c.value;
+
+      fruit.appendChild(stem);
+      fruit.appendChild(leaf);
+      fruit.appendChild(crease);
+      fruit.appendChild(num);
+      cell.appendChild(fruit);
+      boardEl.appendChild(cell);
+      c.el = cell;
+    });
+  }
+
+  /* ── Timer ────────────────────────────────────────── */
+  const DURATION = 90_000;
+
+  function loop() {
+    const now     = performance.now();
+    const elapsed = now - state.t0;
+    const left    = Math.max(0, DURATION - elapsed);
+    const pct     = left / DURATION;
+
+    timerEl.style.width = (pct * 100) + '%';
+    timerEl.style.background = pct < 0.2
+      ? `linear-gradient(90deg, var(--theme-bar-lo1), var(--theme-bar-lo2))`
+      : `linear-gradient(90deg, var(--theme-bar1), var(--theme-bar2))`;
+
+    if (left <= 0) { endGame(); return; }
+    state.rafId = requestAnimationFrame(loop);
+  }
+
+  function pauseTimer() {
+    if (state.ended || state.pausedAt != null) return;
+    cancelAnimationFrame(state.rafId);
+    state.pausedAt = performance.now();
+  }
+
+  function resumeTimer() {
+    if (state.ended || state.pausedAt == null) return;
+    state.t0 += performance.now() - state.pausedAt;
+    state.pausedAt = null;
+    loop();
+  }
+
+  /* ── Theme ────────────────────────────────────────── */
+  function applyTheme(key) {
+    const theme = THEMES[key];
+    const root  = document.documentElement;
+    Object.entries(theme.vars).forEach(([p, v]) => root.style.setProperty(p, v));
+
+    // Remove old theme class, add new
+    THEME_ORDER.forEach(k => document.body.classList.remove('theme-' + k));
+    document.body.classList.add('theme-' + key);
+
+    state.currentTheme = key;
+
+    // Update start screen icon
+    const si = startEl.querySelector('.start-icon');
+    if (si) si.textContent = theme.emoji;
+    endIcon.textContent = theme.emoji;
+  }
+
+  function buildThemeModal() {
+    const grid = $('theme-grid');
+    grid.innerHTML = '';
+    THEME_ORDER.forEach(key => {
+      const t   = THEMES[key];
+      const btn = document.createElement('button');
+      btn.className = 'theme-btn';
+      btn.dataset.theme = key;
+      btn.style.setProperty('--tb-color', t.color);
+
+      const dot  = document.createElement('div');
+      dot.className = 'theme-dot';
+      dot.style.background = t.dot;
+
+      const name = document.createElement('span');
+      name.className = 'theme-btn-name';
+      name.textContent = t.name;
+
+      btn.appendChild(dot);
+      btn.appendChild(name);
+
+      btn.addEventListener('click', () => {
+        applyTheme(key);
+        closeThemeModal();
+      });
+
+      grid.appendChild(btn);
+    });
+  }
+
+  function openThemeModal() {
+    pauseTimer();
+    // Update active state
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      const isActive = btn.dataset.theme === state.currentTheme;
+      btn.disabled = isActive;
+      btn.classList.toggle('active-theme', isActive);
+    });
+    themeDim.classList.add('show');
+  }
+
+  function closeThemeModal() {
+    themeDim.classList.remove('show');
+    resumeTimer();
+  }
+
+  /* ── Drag ─────────────────────────────────────────── */
+  function pt(e) {
+    const src = e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : e);
+    return { x: src.clientX, y: src.clientY };
+  }
+
+  function dragStart(e) {
+    if (state.ended || state.pausedAt != null) return;
+    const { x, y } = pt(e);
+    state.drag = { on: true, x0: x, y0: y, x1: x, y1: y };
+    drawSel();
+  }
+
+  function dragMove(e) {
+    if (!state.drag.on) return;
+    const { x, y } = pt(e);
+    state.drag.x1 = x;
+    state.drag.y1 = y;
+    drawSel();
+    highlightFruits();
+  }
+
+  function dragEnd() {
+    if (!state.drag.on) return;
+    state.drag.on = false;
+
+    const sel = getSelected();
+    const sum = sel.reduce((s, i) => s + state.cells[i].value, 0);
+    if (sum === 10) pop(sel);
+
+    state.cells.forEach(c => {
+      if (!c.removed && c.el)
+        c.el.querySelector('.fruit').classList.remove('selected');
+    });
+    selEl.style.display = 'none';
+  }
+
+  function drawSel() {
+    const { x0, y0, x1, y1 } = state.drag;
+    const wr = wrapEl.getBoundingClientRect();
+    selEl.style.display = 'block';
+    selEl.style.left   = (Math.min(x0, x1) - wr.left) + 'px';
+    selEl.style.top    = (Math.min(y0, y1) - wr.top)  + 'px';
+    selEl.style.width  = Math.abs(x1 - x0) + 'px';
+    selEl.style.height = Math.abs(y1 - y0) + 'px';
+  }
+
+  function getSelected() {
+    const { x0, y0, x1, y1 } = state.drag;
+    const lx = Math.min(x0, x1), rx = Math.max(x0, x1);
+    const ly = Math.min(y0, y1), ry = Math.max(y0, y1);
+
+    return state.cells.reduce((acc, c, i) => {
+      if (c.removed || !c.el) return acc;
+      const r  = c.el.getBoundingClientRect();
+      const cx = r.left + r.width  * 0.5;
+      const cy = r.top  + r.height * 0.5;
+      if (cx >= lx && cx <= rx && cy >= ly && cy <= ry) acc.push(i);
+      return acc;
+    }, []);
+  }
+
+  function highlightFruits() {
+    const set = new Set(getSelected());
+    state.cells.forEach((c, i) => {
+      if (c.removed || !c.el) return;
+      c.el.querySelector('.fruit').classList.toggle('selected', set.has(i));
+    });
+  }
+
+  /* ── Pop / Score ──────────────────────────────────── */
+  function pop(indices) {
+    if (!indices.length) return;
+    indices.forEach(i => {
+      const c = state.cells[i];
+      if (c.removed) return;
+      c.removed = true;
+      const f = c.el.querySelector('.fruit');
+      f.classList.remove('selected');
+      f.classList.add('popping');
+      setTimeout(() => c.el.classList.add('gone'), 260);
+    });
+
+    state.score += indices.length;
+    scoreEl.textContent = state.score + '점';
+    scoreEl.classList.add('flash');
+    setTimeout(() => scoreEl.classList.remove('flash'), 350);
+  }
+
+  /* ── End ──────────────────────────────────────────── */
+  function endGame() {
+    state.ended = true;
+    timerEl.style.width = '0%';
+    setTimeout(() => {
+      finalEl.textContent = state.score;
+      endOverlay.classList.add('show');
+    }, 300);
+  }
+
+  /* ── Share ────────────────────────────────────────── */
+  function share() {
+    const t = THEMES[state.currentTheme];
+    const text = `${t.emoji} 과일 게임에서 ${state.score}점을 획득했어요! 당신도 도전해보세요!`;
+    if (navigator.share) {
+      navigator.share({ title: '과일 게임', text }).catch(() => {});
+    } else {
+      (navigator.clipboard?.writeText(text) ?? Promise.reject())
+        .then(() => alert('클립보드에 복사되었습니다!'))
+        .catch(() => alert(text));
+    }
+  }
+
+  /* ── Events ───────────────────────────────────────── */
+  // Drag
+  wrapEl.addEventListener('mousedown', dragStart);
+  window.addEventListener('mousemove', dragMove);
+  window.addEventListener('mouseup',   dragEnd);
+  wrapEl.addEventListener('touchstart', e => { e.preventDefault(); dragStart(e); }, { passive: false });
+  window.addEventListener('touchmove',  e => { if (state.drag.on) e.preventDefault(); dragMove(e); }, { passive: false });
+  window.addEventListener('touchend',   () => dragEnd(), { passive: false });
+
+  // Buttons
+  $('btn-theme').addEventListener('click', openThemeModal);
+  $('btn-restart').addEventListener('click', init);
+  $('btn-restart-end').addEventListener('click', init);
+  $('btn-share').addEventListener('click', share);
+
+  // Close modal on backdrop click
+  themeDim.addEventListener('click', e => {
+    if (e.target === themeDim) closeThemeModal();
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeThemeModal();
+  });
+
+  // Start screen
+  $('btn-start').addEventListener('click', () => {
+    startEl.style.display = 'none';
+    init();
+  });
+
+  // Handle window resize (grid changes between 10/17 cols via CSS, but rebuild may be needed for accurate layout)
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      // Grid reflows via CSS media query, no JS rebuild needed
+    }, 200);
+  });
+
+  /* ── Build theme modal & apply default theme ─────── */
+  buildThemeModal();
+  applyTheme('orange');
+})();
+</script>
+</body>
+</html>
