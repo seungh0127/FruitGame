@@ -607,17 +607,17 @@
     },
     mango: {
       name: '망고', emoji: '🥭',
-      dot: 'linear-gradient(135deg, #FFF07A, #E83820)',
-      color: '#F0921C',
+      dot: 'linear-gradient(135deg, #FFE868, #D07000)',
+      color: '#FFA020',
       vars: {
-        '--fruit-soft':     '#FFF07A',
-        '--fruit-main':     '#F0921C',
-        '--fruit-dark':     '#E83820',
+        '--fruit-soft':     '#FFE868',
+        '--fruit-main':     '#FFA020',
+        '--fruit-dark':     '#D07000',
         '--fruit-sel-soft': '#D4DAFD',
         '--fruit-sel-main': '#7990F7',
         '--fruit-sel-dark': '#4A60D0',
-        '--fruit-leaf':     '#2d6a4f',
-        '--fruit-stem':     '#40531b',
+        '--fruit-leaf':     '#5A9820',
+        '--fruit-stem':     '#3d6e14',
         '--fruit-num':      '#ffffff',
         '--theme-main':     '#F3B23E',
         '--theme-bg':       '#fffbef',
@@ -792,22 +792,26 @@
   function makeAppleSVG(idx) {
     const g = `afg${idx}`;
     return `<svg class="fruit-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <defs><radialGradient id="${g}" cx="38%" cy="38%" r="60%">
+      <defs><radialGradient id="${g}" cx="36%" cy="40%" r="60%">
         <stop offset="0%" class="g0"/><stop offset="52%" class="g1"/><stop offset="90%" class="g2"/>
       </radialGradient></defs>
-      <path d="M50,97 C22,97,3,80,3,58 C3,34,20,12,44,11 Q47,2,50,2 Q53,2,56,11 C80,12,97,34,97,58 C97,80,78,97,50,97Z" fill="url(#${g})"/>
-      <rect x="47.5" y="-9" width="5" height="14" rx="2.5" fill="var(--fruit-stem)"/>
-      <ellipse cx="66" cy="-1" rx="17" ry="7" transform="rotate(-30 66 -1)" fill="var(--fruit-leaf)"/>
+      <path d="M50,94 C45,97,20,92,6,74 C2,58,6,32,22,18 C30,9,40,7,44,16 Q47,21,50,21 Q53,21,56,16 C60,7,70,9,78,18 C94,32,98,58,94,74 C80,92,55,97,50,94Z" fill="url(#${g})"/>
+      <ellipse cx="35" cy="0" rx="18" ry="8" transform="rotate(-35 35 0)" fill="var(--fruit-leaf)"/>
+      <path d="M50,21 C52,13,55,6,54,-3" stroke="var(--fruit-stem)" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <ellipse cx="26" cy="30" rx="12" ry="6" transform="rotate(-30 26 30)" fill="rgba(255,255,255,0.52)"/>
     </svg>`;
   }
 
   function makeMangoSVG(idx) {
     const g = `mfg${idx}`;
     return `<svg class="fruit-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <defs><radialGradient id="${g}" cx="40%" cy="35%" r="65%">
+      <defs><radialGradient id="${g}" cx="28%" cy="25%" r="70%">
         <stop offset="0%" class="g0"/><stop offset="50%" class="g1"/><stop offset="88%" class="g2"/>
       </radialGradient></defs>
-      <path d="M50,88 C26,88,10,70,10,50 C10,28,26,10,50,10 C74,10,90,28,90,50 C90,70,74,88,50,88Z M50,10 C54,4,63,2,60,11Z" fill="url(#${g})"/>
+      <path d="M48,93 C30,96,8,82,5,62 C2,44,10,24,22,14 C30,7,42,4,54,6 C66,8,78,18,84,34 C90,50,86,70,76,84 C68,92,58,94,48,93Z" fill="url(#${g})"/>
+      <ellipse cx="72" cy="14" rx="22" ry="7" transform="rotate(50 72 14)" fill="var(--fruit-leaf)"/>
+      <ellipse cx="46" cy="-4" rx="15" ry="5" transform="rotate(-20 46 -4)" fill="var(--fruit-leaf)"/>
+      <path d="M55,6 C57,1,59,-4,60,-9" stroke="var(--fruit-leaf)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
     </svg>`;
   }
 
