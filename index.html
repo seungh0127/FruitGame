@@ -214,70 +214,34 @@
       display: none;
     }
 
-    body.theme-peach .fruit-crease {
-      display: block;
-      background: linear-gradient(to bottom, transparent, rgba(190,70,90,0.22) 20%, rgba(190,70,90,0.22) 80%, transparent);
-    }
-
-    /* Grape tendril (replaces leaf shape) */
-    body.theme-grape .fruit-leaf {
-      border-radius: 50% 0 50% 50%;
-      width: 24%;
-      height: 22%;
-      top: -7%;
-      right: 16%;
-      transform: rotate(10deg);
-    }
-
-    /* Apple – slightly wider leaf */
-    body.theme-apple .fruit-leaf {
-      width: 36%;
-      height: 28%;
-      top: -11%;
-    }
-
-    /* Mango – longer leaf */
-    body.theme-mango .fruit-leaf {
-      width: 30%;
-      height: 32%;
-      top: -14%;
-      border-radius: 70% 10% 70% 10%;
-    }
-
     /* ── Per-theme fruit shapes ───────────────────────── */
 
-    /* Apple: slight notch shadow at top center */
-    body.theme-apple .fruit::after {
-      content: '';
-      position: absolute;
-      top: 1%;
-      left: calc(50% - 10%);
-      width: 20%;
-      height: 15%;
-      background: rgba(0,0,0,0.11);
-      border-radius: 0 0 60% 60%;
-      z-index: 2;
-      pointer-events: none;
-    }
+    /* SVG-based themes: remove CSS background */
+    .fruit.svg-fruit { background: none; }
 
-    /* Mango: slightly asymmetric oval */
-    body.theme-mango .fruit {
-      border-radius: 46% 54% 56% 44% / 56% 46% 54% 44%;
-      inset: 4% 6% 6% 4%;
-    }
+    /* Apple: slightly larger inset to match orange size */
+    body.theme-apple .fruit { inset: 2%; }
 
-    /* Grape: cluster — three highlight circles suggest individual grapes */
-    body.theme-grape .fruit:not(.selected) {
+    /* Hide old div decorators for non-orange themes */
+    body.theme-apple .fruit-stem, body.theme-apple .fruit-leaf,
+    body.theme-mango .fruit-stem, body.theme-mango .fruit-leaf,
+    body.theme-peach .fruit-stem, body.theme-peach .fruit-leaf,
+    body.theme-grape .fruit-stem, body.theme-grape .fruit-leaf,
+    .fruit-crease { display: none; }
+
+    /* Grape berry: CSS-only single berry with 3D highlight */
+    body.theme-grape .fruit.grape-purple {
       background:
-        radial-gradient(circle 30% at 26% 26%, rgba(255,255,255,0.32) 0%, transparent 100%),
-        radial-gradient(circle 24% at 70% 22%, rgba(255,255,255,0.26) 0%, transparent 100%),
-        radial-gradient(circle 22% at 50% 64%, rgba(255,255,255,0.20) 0%, transparent 100%),
-        radial-gradient(circle at 38% 32%, var(--fruit-soft), var(--fruit-main) 55%, var(--fruit-dark) 90%);
+        radial-gradient(circle 32% at 34% 28%, rgba(255,255,255,0.55) 0%, transparent 100%),
+        radial-gradient(circle at 50% 50%, #C890D8, #8B1FA8 60%, #5A0D7A 92%);
     }
-
-    /* Peach: softer elliptical gradient + crease is already in .fruit-crease */
-    body.theme-peach .fruit:not(.selected) {
-      background: radial-gradient(ellipse at 50% 42%, var(--fruit-soft) 0%, var(--fruit-main) 58%, var(--fruit-dark) 100%);
+    body.theme-grape .fruit.grape-green {
+      background:
+        radial-gradient(circle 32% at 34% 28%, rgba(255,255,255,0.55) 0%, transparent 100%),
+        radial-gradient(circle at 50% 50%, #C8E898, #7AB830 60%, #4A8010 92%);
+    }
+    body.theme-grape .fruit.selected {
+      background: radial-gradient(circle at 38% 32%, var(--fruit-sel-soft), var(--fruit-sel-main) 55%, var(--fruit-sel-dark) 90%) !important;
     }
 
     /* ── Mango: white card, dark header text, white num on fruit ── */
@@ -296,6 +260,22 @@
       z-index: 1;
       transition: color 0.25s;
     }
+
+    /* ── SVG fruit helpers ───────────────────────────── */
+    .fruit-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+    .g0 { stop-color: var(--fruit-soft); }
+    .g1 { stop-color: var(--fruit-main); }
+    .g2 { stop-color: var(--fruit-dark); }
+    .fruit.selected .g0 { stop-color: var(--fruit-sel-soft); }
+    .fruit.selected .g1 { stop-color: var(--fruit-sel-main); }
+    .fruit.selected .g2 { stop-color: var(--fruit-sel-dark); }
 
     .cell.gone .fruit { visibility: hidden; pointer-events: none; }
 
@@ -627,12 +607,12 @@
     },
     mango: {
       name: '망고', emoji: '🥭',
-      dot: 'linear-gradient(135deg, #FBDFA2, #F3B23E)',
-      color: '#F3B23E',
+      dot: 'linear-gradient(135deg, #FFF07A, #E83820)',
+      color: '#F0921C',
       vars: {
-        '--fruit-soft':     '#FBDFA2',
-        '--fruit-main':     '#F3B23E',
-        '--fruit-dark':     '#C07800',
+        '--fruit-soft':     '#FFF07A',
+        '--fruit-main':     '#F0921C',
+        '--fruit-dark':     '#E83820',
         '--fruit-sel-soft': '#D4DAFD',
         '--fruit-sel-main': '#7990F7',
         '--fruit-sel-dark': '#4A60D0',
@@ -766,7 +746,7 @@
     timerEl.style.width = '100%';
 
     for (let i = 0; i < TOTAL; i++) {
-      state.cells.push({ value: Math.ceil(Math.random() * 9), removed: false, el: null });
+      state.cells.push({ value: Math.ceil(Math.random() * 9), removed: false, el: null, grapeColor: Math.random() < 0.6 ? 'grape-purple' : 'grape-green' });
     }
 
     buildBoard();
@@ -777,7 +757,7 @@
   /* ── Board ────────────────────────────────────────── */
   function buildBoard() {
     boardEl.innerHTML = '';
-    state.cells.forEach(c => {
+    state.cells.forEach((c, i) => {
       const cell = document.createElement('div');
       cell.className = 'cell';
 
@@ -801,9 +781,73 @@
       fruit.appendChild(leaf);
       fruit.appendChild(crease);
       fruit.appendChild(num);
+      setFruitVisual(c, fruit, i);
       cell.appendChild(fruit);
       boardEl.appendChild(cell);
       c.el = cell;
+    });
+  }
+
+  /* ── Fruit SVG creators ───────────────────────────── */
+  function makeAppleSVG(idx) {
+    const g = `afg${idx}`;
+    return `<svg class="fruit-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="${g}" cx="38%" cy="38%" r="60%">
+        <stop offset="0%" class="g0"/><stop offset="52%" class="g1"/><stop offset="90%" class="g2"/>
+      </radialGradient></defs>
+      <path d="M50,97 C22,97,3,80,3,58 C3,34,20,12,44,11 Q47,2,50,2 Q53,2,56,11 C80,12,97,34,97,58 C97,80,78,97,50,97Z" fill="url(#${g})"/>
+      <rect x="47.5" y="-9" width="5" height="14" rx="2.5" fill="var(--fruit-stem)"/>
+      <ellipse cx="66" cy="-1" rx="17" ry="7" transform="rotate(-30 66 -1)" fill="var(--fruit-leaf)"/>
+    </svg>`;
+  }
+
+  function makeMangoSVG(idx) {
+    const g = `mfg${idx}`;
+    return `<svg class="fruit-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="${g}" cx="40%" cy="35%" r="65%">
+        <stop offset="0%" class="g0"/><stop offset="50%" class="g1"/><stop offset="88%" class="g2"/>
+      </radialGradient></defs>
+      <path d="M50,88 C26,88,10,70,10,50 C10,28,26,10,50,10 C74,10,90,28,90,50 C90,70,74,88,50,88Z M50,10 C54,4,63,2,60,11Z" fill="url(#${g})"/>
+    </svg>`;
+  }
+
+  function makePeachSVG(idx) {
+    const g = `pfg${idx}`;
+    return `<svg class="fruit-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="${g}" cx="50%" cy="48%" r="60%">
+        <stop offset="0%" class="g0"/><stop offset="55%" class="g1"/><stop offset="90%" class="g2"/>
+      </radialGradient></defs>
+      <path d="M50,90 C24,80,8,60,8,44 C8,24,20,6,34,6 C22,-4,42,-8,50,10 C58,-8,78,-4,66,6 C80,6,92,24,92,44 C92,60,76,80,50,90Z" fill="url(#${g})"/>
+      <path d="M50,18 C49.5,40,49.5,62,50,86" stroke="rgba(190,60,80,0.22)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="40" cy="2" rx="14" ry="6" transform="rotate(-15 40 2)" fill="var(--fruit-leaf)"/>
+      <ellipse cx="60" cy="2" rx="14" ry="6" transform="rotate(15 60 2)" fill="var(--fruit-leaf)"/>
+    </svg>`;
+  }
+
+  function setFruitVisual(c, fruitEl, idx) {
+    const theme = state.currentTheme;
+    fruitEl.querySelectorAll('.fruit-svg').forEach(s => s.remove());
+    fruitEl.classList.remove('svg-fruit', 'grape-purple', 'grape-green');
+    if (theme === 'apple') {
+      fruitEl.classList.add('svg-fruit');
+      fruitEl.insertAdjacentHTML('afterbegin', makeAppleSVG(idx));
+    } else if (theme === 'mango') {
+      fruitEl.classList.add('svg-fruit');
+      fruitEl.insertAdjacentHTML('afterbegin', makeMangoSVG(idx));
+    } else if (theme === 'peach') {
+      fruitEl.classList.add('svg-fruit');
+      fruitEl.insertAdjacentHTML('afterbegin', makePeachSVG(idx));
+    } else if (theme === 'grape') {
+      fruitEl.classList.add(c.grapeColor);
+    }
+  }
+
+  function rebuildFruitGraphics() {
+    state.cells.forEach((c, i) => {
+      if (!c.el) return;
+      const fruitEl = c.el.querySelector('.fruit');
+      if (!fruitEl) return;
+      setFruitVisual(c, fruitEl, i);
     });
   }
 
@@ -849,6 +893,7 @@
     document.body.classList.add('theme-' + key);
 
     state.currentTheme = key;
+    rebuildFruitGraphics();
 
     // Update start screen icon
     const si = startEl.querySelector('.start-icon');
