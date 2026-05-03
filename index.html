@@ -159,10 +159,10 @@
 
     .fruit {
       position: absolute;
-      inset: 5%;
-      border-radius: 50%;
+      inset: 2%;
+      border-radius: 0;
       overflow: visible;
-      background: radial-gradient(circle at 38% 32%, var(--fruit-soft), var(--fruit-main) 55%, var(--fruit-dark) 90%);
+      background: none;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -171,111 +171,44 @@
     }
 
     .fruit.selected {
-      background: radial-gradient(circle at 38% 32%, var(--fruit-sel-soft), var(--fruit-sel-main) 55%, var(--fruit-sel-dark) 90%);
+      background: none;
     }
 
-    /* Stem */
-    .fruit-stem {
-      position: absolute;
-      top: -10%;
-      left: calc(50% - 3%);
-      width: 6%;
-      height: 14%;
-      background: var(--fruit-stem);
-      border-radius: 3px 3px 1px 1px;
-      pointer-events: none;
-      transition: background 0.25s;
-    }
+    /* ── Lemon: white card, dark header text, white num on fruit ── */
+    body.theme-lemon .hdr-left    { background: #ffffff; }
+    body.theme-lemon .score-label { color: #bbb; }
+    body.theme-lemon .score-val   { color: #222; }
+    body.theme-lemon .timer-track { background: #ebebeb; }
 
-    /* Leaf */
-    .fruit-leaf {
-      position: absolute;
-      top: -10%;
-      right: 12%;
-      width: 32%;
-      height: 26%;
-      background: var(--fruit-leaf);
-      border-radius: 80% 0 80% 0;
-      transform: rotate(25deg);
-      pointer-events: none;
-      transition: background 0.25s;
-    }
-
-    /* Peach crease */
-    .fruit-crease {
-      position: absolute;
-      width: 2px;
-      height: 50%;
-      top: 25%;
-      left: calc(50% - 1px);
-      border-radius: 1px;
-      background: transparent;
-      pointer-events: none;
-      display: none;
-    }
-
-    /* ── Per-theme fruit shapes ───────────────────────── */
-
-    /* SVG-based themes: remove CSS background */
-    .fruit.svg-fruit { background: none; }
-
-    /* Apple: slightly larger inset to match orange size */
-    body.theme-apple .fruit { inset: 2%; }
-
-    /* Hide old div decorators for non-orange themes */
-    body.theme-apple .fruit-stem, body.theme-apple .fruit-leaf,
-    body.theme-mango .fruit-stem, body.theme-mango .fruit-leaf,
-    body.theme-peach .fruit-stem, body.theme-peach .fruit-leaf,
-    body.theme-grape .fruit-stem, body.theme-grape .fruit-leaf,
-    .fruit-crease { display: none; }
-
-    /* Grape berry: CSS-only single berry with 3D highlight */
-    body.theme-grape .fruit.grape-purple {
-      background:
-        radial-gradient(circle 32% at 34% 28%, rgba(255,255,255,0.55) 0%, transparent 100%),
-        radial-gradient(circle at 50% 50%, #C890D8, #8B1FA8 60%, #5A0D7A 92%);
-    }
-    body.theme-grape .fruit.grape-green {
-      background:
-        radial-gradient(circle 32% at 34% 28%, rgba(255,255,255,0.55) 0%, transparent 100%),
-        radial-gradient(circle at 50% 50%, #C8E898, #7AB830 60%, #4A8010 92%);
-    }
-    body.theme-grape .fruit.selected {
-      background: radial-gradient(circle at 38% 32%, var(--fruit-sel-soft), var(--fruit-sel-main) 55%, var(--fruit-sel-dark) 90%) !important;
-    }
-
-    /* ── Mango: white card, dark header text, white num on fruit ── */
-    body.theme-mango .hdr-left    { background: #ffffff; }
-    body.theme-mango .score-label { color: #bbb; }
-    body.theme-mango .score-val   { color: #222; }
-    body.theme-mango .timer-track { background: #ebebeb; }
-
-    .num {
-      color: var(--fruit-num);
-      font-weight: 700;
-      font-size: 37cqi;
-      line-height: 1;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.22);
-      position: relative;
-      z-index: 1;
-      transition: color 0.25s;
-    }
-
-    /* ── SVG fruit helpers ───────────────────────────── */
-    .fruit-svg {
+    .fruit-img {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      overflow: visible;
+      object-fit: contain;
+      object-position: center;
       pointer-events: none;
     }
-    .g0 { stop-color: var(--fruit-soft); }
-    .g1 { stop-color: var(--fruit-main); }
-    .g2 { stop-color: var(--fruit-dark); }
-    .fruit.selected .g0 { stop-color: var(--fruit-sel-soft); }
-    .fruit.selected .g1 { stop-color: var(--fruit-sel-main); }
-    .fruit.selected .g2 { stop-color: var(--fruit-sel-dark); }
+
+    .fruit-num-overlay {
+      position: absolute;
+      left: 50%;
+      top: 56%;
+      transform: translate(-50%, -50%);
+      color: var(--fruit-num);
+      font-weight: 800;
+      font-size: 38cqi;
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.34);
+      pointer-events: none;
+      user-select: none;
+      z-index: 1;
+    }
+
+    body.theme-lemon .fruit-num-overlay { left: 51%; top: 56%; }
+    body.theme-peach .fruit-num-overlay { top: 53%; }
+    body.theme-grape .fruit-num-overlay { top: 51%; }
 
     .cell.gone .fruit { visibility: hidden; pointer-events: none; }
 
@@ -605,29 +538,29 @@
         '--theme-icon':     '#aaaaaa',
       }
     },
-    mango: {
-      name: '망고', emoji: '🥭',
-      dot: 'linear-gradient(135deg, #FFE868, #D07000)',
-      color: '#FFA020',
+    lemon: {
+      name: '레몬', emoji: '🍋',
+      dot: 'linear-gradient(135deg, #FFF78A, #F7D51D)',
+      color: '#F7D51D',
       vars: {
-        '--fruit-soft':     '#FFE868',
-        '--fruit-main':     '#FFA020',
-        '--fruit-dark':     '#D07000',
+        '--fruit-soft':     '#FFF78A',
+        '--fruit-main':     '#FFE34D',
+        '--fruit-dark':     '#E8BD12',
         '--fruit-sel-soft': '#D4DAFD',
         '--fruit-sel-main': '#7990F7',
         '--fruit-sel-dark': '#4A60D0',
         '--fruit-leaf':     '#5A9820',
         '--fruit-stem':     '#3d6e14',
         '--fruit-num':      '#ffffff',
-        '--theme-main':     '#F3B23E',
+        '--theme-main':     '#F7D51D',
         '--theme-bg':       '#fffbef',
         '--theme-card':     '#ffffff',
-        '--theme-score':    '#C07800',
+        '--theme-score':    '#B39100',
         '--theme-bar1':     '#7990F7',
         '--theme-bar2':     '#AFBDFF',
-        '--theme-bar-lo1':  '#F3B23E',
-        '--theme-bar-lo2':  '#FBD070',
-        '--theme-btn-p':    '#F3B23E',
+        '--theme-bar-lo1':  '#F7D51D',
+        '--theme-bar-lo2':  '#FFF178',
+        '--theme-btn-p':    '#F7D51D',
         '--theme-btn-s':    '#D4DAFD',
         '--theme-btn-s-txt':'#4A60D0',
         '--theme-sel-bdr':  '#7990F7',
@@ -697,7 +630,7 @@
     }
   };
 
-  const THEME_ORDER = ['orange','apple','mango','grape','peach'];
+  const THEME_ORDER = ['orange','apple','lemon','grape','peach'];
 
   /* ── State ────────────────────────────────────────── */
   const state = {
@@ -764,23 +697,6 @@
       const fruit = document.createElement('div');
       fruit.className = 'fruit';
 
-      const stem   = document.createElement('div');
-      stem.className = 'fruit-stem';
-
-      const leaf   = document.createElement('div');
-      leaf.className = 'fruit-leaf';
-
-      const crease = document.createElement('div');
-      crease.className = 'fruit-crease';
-
-      const num    = document.createElement('span');
-      num.className = 'num';
-      num.textContent = c.value;
-
-      fruit.appendChild(stem);
-      fruit.appendChild(leaf);
-      fruit.appendChild(crease);
-      fruit.appendChild(num);
       setFruitVisual(c, fruit, i);
       cell.appendChild(fruit);
       boardEl.appendChild(cell);
@@ -788,62 +704,30 @@
     });
   }
 
-  /* ── Fruit SVG creators ───────────────────────────── */
-  function makeAppleSVG(idx) {
-    const g = `afg${idx}`;
-    return `<svg class="fruit-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <defs><radialGradient id="${g}" cx="36%" cy="40%" r="60%">
-        <stop offset="0%" class="g0"/><stop offset="52%" class="g1"/><stop offset="90%" class="g2"/>
-      </radialGradient></defs>
-      <path d="M50,94 C45,97,20,92,6,74 C2,58,6,32,22,18 C30,9,40,7,44,16 Q47,21,50,21 Q53,21,56,16 C60,7,70,9,78,18 C94,32,98,58,94,74 C80,92,55,97,50,94Z" fill="url(#${g})"/>
-      <ellipse cx="35" cy="0" rx="18" ry="8" transform="rotate(-35 35 0)" fill="var(--fruit-leaf)"/>
-      <path d="M50,21 C52,13,55,6,54,-3" stroke="var(--fruit-stem)" stroke-width="5" stroke-linecap="round" fill="none"/>
-      <ellipse cx="26" cy="30" rx="12" ry="6" transform="rotate(-30 26 30)" fill="rgba(255,255,255,0.52)"/>
-    </svg>`;
-  }
-
-  function makeMangoSVG(idx) {
-    const g = `mfg${idx}`;
-    return `<svg class="fruit-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <defs><radialGradient id="${g}" cx="28%" cy="25%" r="70%">
-        <stop offset="0%" class="g0"/><stop offset="50%" class="g1"/><stop offset="88%" class="g2"/>
-      </radialGradient></defs>
-      <path d="M48,93 C30,96,8,82,5,62 C2,44,10,24,22,14 C30,7,42,4,54,6 C66,8,78,18,84,34 C90,50,86,70,76,84 C68,92,58,94,48,93Z" fill="url(#${g})"/>
-      <ellipse cx="72" cy="14" rx="22" ry="7" transform="rotate(50 72 14)" fill="var(--fruit-leaf)"/>
-      <ellipse cx="46" cy="-4" rx="15" ry="5" transform="rotate(-20 46 -4)" fill="var(--fruit-leaf)"/>
-      <path d="M55,6 C57,1,59,-4,60,-9" stroke="var(--fruit-leaf)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-    </svg>`;
-  }
-
-  function makePeachSVG(idx) {
-    const g = `pfg${idx}`;
-    return `<svg class="fruit-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <defs><radialGradient id="${g}" cx="50%" cy="48%" r="60%">
-        <stop offset="0%" class="g0"/><stop offset="55%" class="g1"/><stop offset="90%" class="g2"/>
-      </radialGradient></defs>
-      <path d="M50,90 C24,80,8,60,8,44 C8,24,20,6,34,6 C22,-4,42,-8,50,10 C58,-8,78,-4,66,6 C80,6,92,24,92,44 C92,60,76,80,50,90Z" fill="url(#${g})"/>
-      <path d="M50,18 C49.5,40,49.5,62,50,86" stroke="rgba(190,60,80,0.22)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <ellipse cx="40" cy="2" rx="14" ry="6" transform="rotate(-15 40 2)" fill="var(--fruit-leaf)"/>
-      <ellipse cx="60" cy="2" rx="14" ry="6" transform="rotate(15 60 2)" fill="var(--fruit-leaf)"/>
-    </svg>`;
-  }
+  const FRUIT_ASSETS = {
+    apple:  'assets/apple.svg',
+    orange: 'assets/orange.svg',
+    peach:  'assets/peach.svg',
+    lemon:  'assets/lemon.svg',
+    grape:  'assets/grape1.svg',
+  };
 
   function setFruitVisual(c, fruitEl, idx) {
     const theme = state.currentTheme;
-    fruitEl.querySelectorAll('.fruit-svg').forEach(s => s.remove());
-    fruitEl.classList.remove('svg-fruit', 'grape-purple', 'grape-green');
-    if (theme === 'apple') {
-      fruitEl.classList.add('svg-fruit');
-      fruitEl.insertAdjacentHTML('afterbegin', makeAppleSVG(idx));
-    } else if (theme === 'mango') {
-      fruitEl.classList.add('svg-fruit');
-      fruitEl.insertAdjacentHTML('afterbegin', makeMangoSVG(idx));
-    } else if (theme === 'peach') {
-      fruitEl.classList.add('svg-fruit');
-      fruitEl.insertAdjacentHTML('afterbegin', makePeachSVG(idx));
-    } else if (theme === 'grape') {
-      fruitEl.classList.add(c.grapeColor);
-    }
+    fruitEl.innerHTML = '';
+
+    const img = document.createElement('img');
+    img.className = 'fruit-img';
+    img.src = FRUIT_ASSETS[theme] || FRUIT_ASSETS.orange;
+    img.alt = '';
+    img.draggable = false;
+
+    const num = document.createElement('span');
+    num.className = 'fruit-num-overlay';
+    num.textContent = c.value;
+
+    fruitEl.appendChild(img);
+    fruitEl.appendChild(num);
   }
 
   function rebuildFruitGraphics() {
