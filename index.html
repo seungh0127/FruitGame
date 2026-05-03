@@ -18,7 +18,7 @@
       --fruit-num:       #ffffff;
 
       --theme-main:      #FF9F1C;
-      --theme-bg:        #FFF4E3;
+      --theme-bg:        #f3f4f6;
       --theme-card:      #ffffff;
       --theme-score:     #FF9F1C;
       --theme-bar1:      #2EC4B6;
@@ -174,6 +174,18 @@
       background: none;
     }
 
+    .fruit.selected::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 38% 32%, var(--fruit-sel-soft), var(--fruit-sel-main) 55%, var(--fruit-sel-dark) 92%);
+      -webkit-mask: var(--fruit-mask) center / contain no-repeat;
+      mask: var(--fruit-mask) center / contain no-repeat;
+      opacity: 0.84;
+      pointer-events: none;
+      z-index: 1;
+    }
+
     /* ── Lemon: white card, dark header text, white num on fruit ── */
     body.theme-lemon .hdr-left    { background: #ffffff; }
     body.theme-lemon .score-label { color: #bbb; }
@@ -188,6 +200,7 @@
       object-fit: contain;
       object-position: center;
       pointer-events: none;
+      z-index: 0;
     }
 
     .fruit-num-overlay {
@@ -203,7 +216,7 @@
       text-shadow: 0 1px 3px rgba(0,0,0,0.34);
       pointer-events: none;
       user-select: none;
-      z-index: 1;
+      z-index: 2;
     }
 
     body.theme-lemon .fruit-num-overlay { left: 51%; top: 56%; }
@@ -297,9 +310,11 @@
     .theme-btn:disabled { cursor: not-allowed; }
 
     .theme-dot {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+      object-position: center;
+      pointer-events: none;
     }
 
     .theme-btn-name { font-size: 11px; color: #666; font-weight: 500; }
@@ -493,7 +508,7 @@
         '--fruit-stem':     '#48782a',
         '--fruit-num':      '#ffffff',
         '--theme-main':     '#FF9F1C',
-        '--theme-bg':       '#FFF4E3',
+        '--theme-bg':       '#f3f4f6',
         '--theme-card':     '#ffffff',
         '--theme-score':    '#FF9F1C',
         '--theme-bar1':     '#2EC4B6',
@@ -523,7 +538,7 @@
         '--fruit-stem':     '#5d4037',
         '--fruit-num':      '#ffffff',
         '--theme-main':     '#E65A54',
-        '--theme-bg':       '#fef5f5',
+        '--theme-bg':       '#f3f4f6',
         '--theme-card':     '#ffffff',
         '--theme-score':    '#E65A54',
         '--theme-bar1':     '#89BC5C',
@@ -553,7 +568,7 @@
         '--fruit-stem':     '#3d6e14',
         '--fruit-num':      '#ffffff',
         '--theme-main':     '#F7D51D',
-        '--theme-bg':       '#fffbef',
+        '--theme-bg':       '#f3f4f6',
         '--theme-card':     '#ffffff',
         '--theme-score':    '#B39100',
         '--theme-bar1':     '#7990F7',
@@ -583,7 +598,7 @@
         '--fruit-stem':     '#4a3800',
         '--fruit-num':      '#ffffff',
         '--theme-main':     '#8B1FA8',
-        '--theme-bg':       '#f8f0fc',
+        '--theme-bg':       '#f3f4f6',
         '--theme-card':     '#ffffff',
         '--theme-score':    '#8B1FA8',
         '--theme-bar1':     '#8bc34a',
@@ -613,7 +628,7 @@
         '--fruit-stem':     '#48782a',
         '--fruit-num':      '#ffffff',
         '--theme-main':     '#FF8FAB',
-        '--theme-bg':       '#fff5f7',
+        '--theme-bg':       '#f3f4f6',
         '--theme-card':     '#ffffff',
         '--theme-score':    '#d05070',
         '--theme-bar1':     '#4895ef',
@@ -721,6 +736,7 @@
     img.src = FRUIT_ASSETS[theme] || FRUIT_ASSETS.orange;
     img.alt = '';
     img.draggable = false;
+    fruitEl.style.setProperty('--fruit-mask', `url("${img.src}")`);
 
     const num = document.createElement('span');
     num.className = 'fruit-num-overlay';
@@ -799,9 +815,11 @@
       btn.dataset.theme = key;
       btn.style.setProperty('--tb-color', t.color);
 
-      const dot  = document.createElement('div');
+      const dot  = document.createElement('img');
       dot.className = 'theme-dot';
-      dot.style.background = t.dot;
+      dot.src = FRUIT_ASSETS[key] || FRUIT_ASSETS.orange;
+      dot.alt = '';
+      dot.draggable = false;
 
       const name = document.createElement('span');
       name.className = 'theme-btn-name';
